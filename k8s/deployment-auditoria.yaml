@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auditoria-service
+  namespace: unifiapay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auditoria-service
+  template:
+    metadata:
+      labels:
+        app: auditoria-service
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: auditoria-service
+        image: guilhermefernandesvicente/auditoria-service:v1.558939
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: livro-razao
+          mountPath: /var/logs/api
+        securityContext:
+          readOnlyRootFilesystem: true
+      volumes:
+      - name: livro-razao
+        persistentVolumeClaim:
+          claimName: livro-razao-pvc

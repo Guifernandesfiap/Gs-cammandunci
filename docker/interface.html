@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniFIAP Pay - Interface PIX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .info-box strong {
+            color: #333;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-enviar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-enviar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-enviar:active {
+            transform: translateY(0);
+        }
+        
+        .btn-limpar {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-limpar:hover {
+            background: #d0d0d0;
+        }
+        
+        .resultado {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .resultado.show {
+            display: block;
+        }
+        
+        .resultado h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .resultado pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .stat-item {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">💳</div>
+            <h1>UniFIAP Pay</h1>
+            <p class="subtitle">Sistema de Pagamentos PIX - Microsserviços</p>
+        </div>
+        
+        <div class="info-box">
+            <strong>ℹ️ Informação:</strong> Saldo de Reserva Bancária: R$ 10.000,00<br>
+            Status: <span id="status-api">Verificando...</span>
+        </div>
+        
+        <form id="pixForm">
+            <div class="form-group">
+                <label for="chave">Chave PIX Destino *</label>
+                <input type="text" id="chave" placeholder="Ex: email@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="valor">Valor (R$) *</label>
+                <input type="number" id="valor" placeholder="Ex: 100.00" min="0.01" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="motivo">Motivo da Transferência</label>
+                <select id="motivo">
+                    <option value="pagamento">Pagamento</option>
+                    <option value="transferencia">Transferência</option>
+                    <option value="devolucao">Devolução</option>
+                    <option value="outro">Outro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <input type="text" id="descricao" placeholder="Descrição da transação (opcional)">
+            </div>
+            
+            <div class="loading" id="loading">
+                <span class="spinner"></span>
+                Processando pagamento...
+            </div>
+            
+            <div class="status" id="status"></div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn-enviar">Enviar PIX</button>
+                <button type="button" class="btn-limpar" onclick="limparFormulario()">Limpar</button>
+            </div>
+        </form>
+        
+        <div class="resultado" id="resultado">
+            <h3>Resposta da API</h3>
+            <pre id="resultadoConteudo"></pre>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalTransacoes">0</div>
+                <div class="stat-label">Transações</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalAprovado">R$ 0</div>
+                <div class="stat-label">Aprovado</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🚀 Kubernetes + Minikube | RM: 558939</p>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:30001';
+        let totalTransacoes = 0;
+        let totalAprovado = 0;
+        
+        // Verificar status da API
+        async function verificarAPI() {
+            try {
+                const response = await fetch(API_URL + '/health', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('status-api').textContent = '✅ Online';
+                    document.getElementById('status-api').style.color = '#28a745';
+                } else {
+                    document.getElementById('status-api').textContent = '⚠️ Indisponível';
+                    document.getElementById('status-api').style.color = '#ffc107';
+                }
+            } catch (error) {
+                document.getElementById('status-api').textContent = '❌ Offline';
+                document.getElementById('status-api').style.color = '#dc3545';
+            }
+        }
+        
+        // Enviar PIX
+        document.getElementById('pixForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const chave = document.getElementById('chave').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const motivo = document.getElementById('motivo').value;
+            const descricao = document.getElementById('descricao').value;
+            
+            const statusDiv = document.getElementById('status');
+            const loadingDiv = document.getElementById('loading');
+            const resultadoDiv = document.getElementById('resultado');
+            
+            // Limpar mensagens anteriores
+            statusDiv.className = 'status';
+            statusDiv.textContent = '';
+            resultadoDiv.classList.remove('show');
+            
+            // Mostrar loading
+            loadingDiv.classList.add('show');
+            
+            try {
+                const payload = {
+                    chave_pix: chave,
+                    valor: valor,
+                    motivo: motivo,
+                    descricao: descricao
+                };
+                
+                const response = await fetch(API_URL + '/pix/transferir', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                loadingDiv.classList.remove('show');
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = '✅ PIX enviado com sucesso! Status: ' + (data.status || 'AGUARDANDO_LIQUIDACAO');
+                    
+                    totalTransacoes++;
+                    totalAprovado += valor;
+                    
+                    document.getElementById('totalTransacoes').textContent = totalTransacoes;
+                    document.getElementById('totalAprovado').textContent = 'R$ ' + totalAprovado.toFixed(2);
+                    
+                    document.getElementById('resultadoConteudo').textContent = JSON.stringify(data, null, 2);
+                    resultadoDiv.classList.add('show');
+                    
+                    document.getElementById('pixForm').reset();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Erro: ' + (data.erro || 'Falha ao processar PIX');
+                    
+                    document.getElementById('resultadoConteudo').textContent = JSON.stringify(data, null, 2);
+                    resultadoDiv.classList.add('show');
+                }
+            } catch (error) {
+                loadingDiv.classList.remove('show');
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Erro de conexão: ' + error.message;
+            }
+        });
+        
+        function limparFormulario() {
+            document.getElementById('pixForm').reset();
+            document.getElementById('status').className = 'status';
+            document.getElementById('resultado').classList.remove('show');
+        }
+        
+        // Verificar API ao carregar
+        verificarAPI();
+        
+        // Verificar a cada 30 segundos
+        setInterval(verificarAPI, 30000);
+    </script>
+</body>
+</html>

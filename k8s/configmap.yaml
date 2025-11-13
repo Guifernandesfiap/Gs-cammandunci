@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifiapay-config
+  namespace: unifiapay
+data:
+  RESERVA_BANCARIA_SALDO: "10000"

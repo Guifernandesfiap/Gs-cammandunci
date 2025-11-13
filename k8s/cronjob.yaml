@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-fechamento-reserva
+  namespace: unifiapay
+spec:
+  schedule: "0 */6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: auditoria-job
+            image: dockerhubuser/auditoria-service:v1.558939
+          restartPolicy: OnFailure
